@@ -12,6 +12,6 @@ compiler:
       enabled: true
       runs: 1_000_000
     remappings:
-      - "solfege/=lib/solfege/src/"
+      - "solmate/=lib/solmate/src/"
       - "ds-test/=lib/ds-test/src/"
       - "forge-std/=lib/forge-std/src/"
