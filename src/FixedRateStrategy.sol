@@ -125,6 +125,19 @@ contract FixedRateStrategy is Auth, ReentrancyGuard {
     /// --- WITHDRAWAL LOGIC
     ///////////////////////////////////////////////////////////////
 
+    /// @notice Emitted after a successful harvest.
+    event WithdrawalDelayUpdated(address indexed user, uint256 newPeriod);
+
+    /// @notice The period in seconds over which withdrawal isn't permitted.
+    uint64 public withdrawalDelayPeriod = 91 days;
+
+    /// @notice Update the fixed rate.
+    /// @dev Per second. Example: APR / 365 / 86_400
+    function setWithdrawalDelayPeriod(uint64 newPeriod) external requiresAuth {
+        withdrawalDelayPeriod = newPeriod;
+        emit WithdrawalDelayUpdated(msg.sender, newPeriod);
+    }
+
     function previewWithdraw(uint256 underlyingAmount) public view virtual returns (uint256) {
         uint256 supply = totalSupply;
 
@@ -141,8 +154,7 @@ contract FixedRateStrategy is Auth, ReentrancyGuard {
         totalSupply = totalSupply - shares;
         balances[msg.sender] = balances[msg.sender] - shares;
 
-        // If total float balance is unsuficient, withdraw from strategy.
-
+        // If total float balance is insufficient, withdraw from strategy.
         underlyingAmount = retrieveUnderlying(underlyingAmount);
 
         // Transfer to caller.
@@ -212,9 +224,6 @@ contract FixedRateStrategy is Auth, ReentrancyGuard {
 
     /// @notice A timestamp representing when the most recent harvest occurred.
     uint64 public lastHarvest;
-
-    /// @notice The period in seconds over which withdrawal isn't permitted.
-    uint64 public withdrawalDelayPeriod = 91 days;
 
     /// @notice The period in seconds over which locked profit is unlocked.
     /// @dev Cannot be 0 as it opens harvests up to sandwich attacks.
@@ -320,6 +329,8 @@ contract FixedRateStrategy is Auth, ReentrancyGuard {
 
         // Mark the Strategy as initialized.
         isInitialized = true;
+
+        lastHarvest = uint64(block.timestamp);
 
         // Open for deposits.
         totalSupply = 0;

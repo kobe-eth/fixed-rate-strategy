@@ -140,5 +140,7 @@ contract FixedRateStrategyTest is UtilsTest {
 
         hevm.warp(block.timestamp + strategyFixedRate.withdrawalDelayPeriod());
         strategyFixedRate.withdraw(strategyFixedRate.balanceOfUnderlying(user));
+
+        assertEq(strategyFixedRate.totalStrategyHoldings(), 0);
     }
 }
